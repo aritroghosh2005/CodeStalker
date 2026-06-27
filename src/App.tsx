@@ -248,15 +248,22 @@ export default function App() {
               </div>
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-xl font-black tracking-tight bg-gradient-to-r from-fuchsia-400 via-indigo-400 to-cyan-300 bg-clip-text text-transparent uppercase font-display">
                   CodeStalker
                 </h1>
-                <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider">
-                  CF Engine v2.0
-                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
+                    CF Engine v2.0
+                  </span>
+                  <span className="text-[10px] bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.15)] font-mono px-2.5 py-0.5 rounded-md flex items-center gap-1 font-bold">
+                    <span>made with 💖 by Aritro</span>
+                    <span className="text-zinc-600 font-bold">•</span>
+                    <a href="https://codeforces.com/profile/Greninja2005" target="_blank" rel="noopener noreferrer" className="text-fuchsia-400 hover:underline hover:text-fuchsia-300">Greninja2005</a>
+                  </span>
+                </div>
               </div>
-              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium">
+              <p className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5">
                 Target, track, and practice Codeforces problems on demand
               </p>
             </div>
@@ -556,7 +563,10 @@ export default function App() {
       {/* Elegant Footer */}
       <footer className="mt-auto py-4 border-t border-zinc-900 text-center text-[10px] font-mono text-zinc-500 px-6 bg-zinc-950 relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 CodeStalker • Powered by Codeforces free public API</p>
+          <p>
+            © 2026 CodeStalker • Powered by Codeforces free public API • Made with 💖 by{" "}
+            <a href="https://codeforces.com/profile/Greninja2005" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline font-bold">Aritro (Greninja2005)</a>
+          </p>
           <div className="flex items-center gap-4">
             <span className="text-[10px] text-zinc-400">
               Session Problems Generated: <b className="text-zinc-200">{allProblems.length > 0 ? "24" : "0"}</b> • Unique Tags: <b className="text-zinc-200">12</b>
