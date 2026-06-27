@@ -1,0 +1,6 @@
+{
+  "name": "CodeStalker",
+  "description": "An immersive problem recommendation engine and practice tracker for Codeforces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
