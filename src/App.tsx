@@ -128,6 +128,31 @@ export default function App() {
     localStorage.setItem("codestalker_solved_problems", JSON.stringify(updatedList));
   };
 
+  // Import a list of solved problems and create a union
+  const handleImportSolvedProblems = (imported: SolvedProblem[]) => {
+    const mergedMap = new Map<string, SolvedProblem>();
+    
+    // Add current solved items
+    solvedList.forEach((item) => {
+      mergedMap.set(item.problem.uniqueKey, item);
+    });
+    
+    // Add imported items if they don't exist
+    imported.forEach((item) => {
+      if (!mergedMap.has(item.problem.uniqueKey)) {
+        mergedMap.set(item.problem.uniqueKey, item);
+      }
+    });
+    
+    // Sort by solvedAt descending
+    const updatedList = Array.from(mergedMap.values()).sort(
+      (a, b) => new Date(b.solvedAt).getTime() - new Date(a.solvedAt).getTime()
+    );
+    
+    setSolvedList(updatedList);
+    localStorage.setItem("codestalker_solved_problems", JSON.stringify(updatedList));
+  };
+
   // Generate 5 recommendations for a top-level problem
   const handleGetMoreLikeThis = (p: Problem) => {
     if (!currentGeneration) return;
@@ -374,6 +399,7 @@ export default function App() {
               allProblems={allProblems}
               onUnsolve={handleToggleSolve}
               onSolve={handleToggleSolve}
+              onImportSolvedProblems={handleImportSolvedProblems}
             />
           </div>
 

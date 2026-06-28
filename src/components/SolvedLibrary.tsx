@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Search, SlidersHorizontal, Trash2, Award, ExternalLink, Tag, Plus, CheckCircle2, RefreshCw } from "lucide-react";
+import { Search, SlidersHorizontal, Trash2, Award, ExternalLink, Tag, Plus, CheckCircle2, RefreshCw, Download, Upload } from "lucide-react";
 import { Problem, SolvedProblem } from "../types";
 import { getRatingColorClass } from "../utils/codeforces";
 
@@ -8,6 +8,7 @@ interface SolvedLibraryProps {
   allProblems: Problem[];
   onUnsolve: (p: Problem) => void;
   onSolve: (p: Problem) => void;
+  onImportSolvedProblems: (imported: SolvedProblem[]) => void;
 }
 
 // All standard possible CF ratings
@@ -29,8 +30,10 @@ export const SolvedLibrary: React.FC<SolvedLibraryProps> = ({
   allProblems,
   onUnsolve,
   onSolve,
+  onImportSolvedProblems,
 }) => {
   const [searchText, setSearchText] = useState("");
+  const [importStatus, setImportStatus] = useState<{ text: string; isError: boolean } | null>(null);
   
   // Custom type-to-filter states for rating & tags
   const [ratingQuery, setRatingQuery] = useState("");
@@ -41,6 +44,88 @@ export const SolvedLibrary: React.FC<SolvedLibraryProps> = ({
   // Manual solver search state
   const [manualSearch, setManualSearch] = useState("");
   const [isManualFocused, setIsManualFocused] = useState(false);
+
+  // Export backup file (.json)
+  const handleExport = () => {
+    try {
+      if (solvedList.length === 0) {
+        setImportStatus({ text: "No solved problems to export.", isError: true });
+        setTimeout(() => setImportStatus(null), 4000);
+        return;
+      }
+      const dataStr = JSON.stringify(solvedList, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      
+      const fileName = `codestalker_solved_${new Date().toISOString().split('T')[0]}.json`;
+      
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      
+      URL.revokeObjectURL(url);
+      
+      setImportStatus({ text: "Backup exported successfully!", isError: false });
+      setTimeout(() => setImportStatus(null), 4000);
+    } catch (err) {
+      setImportStatus({ text: "Export failed.", isError: true });
+      setTimeout(() => setImportStatus(null), 4000);
+    }
+  };
+
+  // Import backup file (.json)
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (Array.isArray(parsed)) {
+          const validProblems: SolvedProblem[] = [];
+          
+          parsed.forEach((item: any) => {
+            if (item && item.problem && typeof item.problem.uniqueKey === "string") {
+              validProblems.push({
+                problem: {
+                  uniqueKey: item.problem.uniqueKey,
+                  name: item.problem.name || "Unknown Problem",
+                  type: item.problem.type || "PROGRAMMING",
+                  rating: typeof item.problem.rating === "number" ? item.problem.rating : 1200,
+                  tags: Array.isArray(item.problem.tags) ? item.problem.tags : [],
+                  url: item.problem.url || "",
+                  index: item.problem.index || "",
+                  contestId: item.problem.contestId,
+                  problemsetName: item.problem.problemsetName
+                },
+                solvedAt: typeof item.solvedAt === "string" ? item.solvedAt : new Date().toISOString()
+              });
+            }
+          });
+
+          if (validProblems.length === 0) {
+            setImportStatus({ text: "No valid solved problems found in file.", isError: true });
+            setTimeout(() => setImportStatus(null), 4000);
+            return;
+          }
+
+          onImportSolvedProblems(validProblems);
+          setImportStatus({ text: `Successfully imported ${validProblems.length} problems!`, isError: false });
+          setTimeout(() => setImportStatus(null), 4000);
+        } else {
+          setImportStatus({ text: "Invalid file format: expected a JSON array.", isError: true });
+          setTimeout(() => setImportStatus(null), 4000);
+        }
+      } catch (err) {
+        setImportStatus({ text: "Error parsing file. Ensure it is valid JSON.", isError: true });
+        setTimeout(() => setImportStatus(null), 4000);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   // Extract all unique ratings currently present in the solved list
   const solvedRatings = useMemo(() => {
@@ -152,7 +237,7 @@ export const SolvedLibrary: React.FC<SolvedLibraryProps> = ({
 
       {/* Sidebar Header */}
       <div className="p-5 border-b border-zinc-800/80 bg-zinc-900/50 backdrop-blur-md">
-        <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-emerald-400 animate-pulse-slow" />
             <h2 className="text-sm font-display font-black tracking-wider text-zinc-100 uppercase">
@@ -163,6 +248,40 @@ export const SolvedLibrary: React.FC<SolvedLibraryProps> = ({
             {solvedList.length} Solved
           </span>
         </div>
+
+        {/* Export & Import Action Buttons */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <button
+            onClick={handleExport}
+            className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-sm group select-none"
+            title="Export solved problems backup file (.json)"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-400 group-hover:scale-110 transition-transform" />
+            <span>Export Backup</span>
+          </button>
+          
+          <label className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-sm group select-none text-center">
+            <Upload className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span>Import Backup</span>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
+          </label>
+        </div>
+
+        {/* Temporary Import/Export Status Feedback Banner */}
+        {importStatus && (
+          <div className={`p-2 rounded-xl text-center text-[11px] font-mono font-bold mb-3 border ${
+            importStatus.isError 
+              ? "bg-red-500/10 border-red-500/20 text-red-400" 
+              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+          }`}>
+            {importStatus.text}
+          </div>
+        )}
 
         {/* Rapid Stats Grid */}
         <div className="grid grid-cols-3 gap-2 p-3 bg-zinc-950/60 rounded-xl border border-zinc-850 text-[11px] mb-4">
