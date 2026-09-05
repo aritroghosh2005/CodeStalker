@@ -278,9 +278,7 @@ export default function App() {
                   CodeStalker
                 </h1>
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
-                    CF Engine v2.0
-                  </span>
+                
                   <span className="text-[10px] bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.15)] font-mono px-2.5 py-0.5 rounded-md flex items-center gap-1 font-bold">
                     <span>made with 💖 by Aritro</span>
                     <span className="text-zinc-600 font-bold">•</span>
